@@ -1,0 +1,369 @@
+#!/usr/bin/env python3
+"""
+Molecular Dynamics Trajectory Analysis
+Analyzes MD simulation trajectories and calculates structural parameters
+Author: Amir Sedaghati
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+
+class MDTrajectoryAnalyzer:
+    """Analyze molecular dynamics simulation trajectories"""
+    
+    def __init__(self, trajectory_file=None):
+        self.trajectory_file = trajectory_file
+        self.coordinates = None
+        self.time_points = None
+        self.rmsd_data = None
+        self.rmsf_data = None
+        
+    def load_trajectory_data(self, filename='trajectory_data.txt'):
+        """Load trajectory data from file"""
+        if not Path(filename).exists():
+            print(f"Creating sample trajectory data: {filename}")
+            self.create_sample_trajectory(filename)
+            
+        try:
+            data = np.loadtxt(filename, skiprows=1)
+            self.time_points = data[:, 0]  # First column: time
+            self.coordinates = data[:, 1:]  # Remaining columns: coordinates
+            
+            print(f"Loaded trajectory: {len(self.time_points)} frames, "
+                  f"{self.coordinates.shape[1]} atoms")
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error loading trajectory: {e}")
+            return False
+    
+    def create_sample_trajectory(self, filename):
+        """Create sample MD trajectory data"""
+        n_frames = 1000
+        n_atoms = 50
+        dt = 0.1  # time step in ns
+        
+        # Generate time points
+        time = np.arange(0, n_frames * dt, dt)
+        
+        # Generate sample coordinates with some drift and fluctuation
+        np.random.seed(42)
+        coordinates = np.zeros((n_frames, n_atoms * 3))  # x,y,z for each atom
+        
+        # Initial coordinates
+        initial_coords = np.random.normal(0, 5, n_atoms * 3)
+        
+        for frame in range(n_frames):
+            # Add small random fluctuations
+            fluctuations = np.random.normal(0, 0.2, n_atoms * 3)
+            
+            # Add gradual drift for some atoms
+            drift = 0.001 * frame * np.sin(np.arange(n_atoms * 3) * 0.1)
+            
+            coordinates[frame] = initial_coords + fluctuations + drift
+        
+        # Save to file
+        with open(filename, 'w') as f:
+            f.write("# Time(ns) followed by 3N coordinates (x1,y1,z1,x2,y2,z2,...)\n")
+            for i, t in enumerate(time):
+                coord_str = ' '.join([f"{x:.3f}" for x in coordinates[i]])
+                f.write(f"{t:.1f} {coord_str}\n")
+        
+        print(f"Sample trajectory created: {n_frames} frames, {n_atoms} atoms")
+    
+    def calculate_rmsd(self, reference_frame=0):
+        """Calculate Root Mean Square Deviation"""
+        if self.coordinates is None:
+            print("No trajectory data loaded!")
+            return None
+            
+        reference = self.coordinates[reference_frame]
+        n_atoms = len(reference) // 3
+        
+        rmsd_values = []
+        
+        for frame in self.coordinates:
+            # Reshape coordinates to (n_atoms, 3)
+            ref_coords = reference.reshape(n_atoms, 3)
+            frame_coords = frame.reshape(n_atoms, 3)
+            
+            # Calculate RMSD
+            diff = frame_coords - ref_coords
+            rmsd = np.sqrt(np.mean(np.sum(diff**2, axis=1)))
+            rmsd_values.append(rmsd)
+        
+        self.rmsd_data = np.array(rmsd_values)
+        
+        print(f"RMSD calculated: mean = {self.rmsd_data.mean():.2f} Å, "
+              f"max = {self.rmsd_data.max():.2f} Å")
+        
+        return self.rmsd_data
+    
+    def calculate_rmsf(self):
+        """Calculate Root Mean Square Fluctuation"""
+        if self.coordinates is None:
+            print("No trajectory data loaded!")
+            return None
+            
+        n_atoms = self.coordinates.shape[1] // 3
+        
+        # Calculate mean position for each atom
+        mean_coords = np.mean(self.coordinates, axis=0)
+        
+        rmsf_values = []
+        
+        for atom_idx in range(n_atoms):
+            # Extract coordinates for this atom (x, y, z)
+            start_idx = atom_idx * 3
+            end_idx = start_idx + 3
+            
+            atom_coords = self.coordinates[:, start_idx:end_idx]
+            mean_atom_coords = mean_coords[start_idx:end_idx]
+            
+            # Calculate RMSF for this atom
+            diff = atom_coords - mean_atom_coords
+            rmsf = np.sqrt(np.mean(np.sum(diff**2, axis=1)))
+            rmsf_values.append(rmsf)
+        
+        self.rmsf_data = np.array(rmsf_values)
+        
+        print(f"RMSF calculated: mean = {self.rmsf_data.mean():.2f} Å, "
+              f"max = {self.rmsf_data.max():.2f} Å")
+        
+        return self.rmsf_data
+    
+    def calculate_radius_of_gyration(self):
+        """Calculate radius of gyration over time"""
+        if self.coordinates is None:
+            print("No trajectory data loaded!")
+            return None
+            
+        n_atoms = self.coordinates.shape[1] // 3
+        rg_values = []
+        
+        for frame in self.coordinates:
+            coords = frame.reshape(n_atoms, 3)
+            
+            # Calculate center of mass
+            center_of_mass = np.mean(coords, axis=0)
+            
+            # Calculate radius of gyration
+            distances_sq = np.sum((coords - center_of_mass)**2, axis=1)
+            rg = np.sqrt(np.mean(distances_sq))
+            rg_values.append(rg)
+        
+        rg_data = np.array(rg_values)
+        
+        print(f"Radius of gyration: mean = {rg_data.mean():.2f} Å, "
+              f"std = {rg_data.std():.2f} Å")
+        
+        return rg_data
+    
+    def analyze_hydrogen_bonds(self, cutoff_distance=3.5):
+        """Simple hydrogen bond analysis (distance-based)"""
+        if self.coordinates is None:
+            print("No trajectory data loaded!")
+            return None
+            
+        # This is a simplified version - in reality, you'd need atom types
+        n_atoms = self.coordinates.shape[1] // 3
+        hbond_counts = []
+        
+        for frame in self.coordinates:
+            coords = frame.reshape(n_atoms, 3)
+            
+            # Calculate all pairwise distances
+            distances = np.zeros((n_atoms, n_atoms))
+            for i in range(n_atoms):
+                for j in range(i+1, n_atoms):
+                    dist = np.linalg.norm(coords[i] - coords[j])
+                    distances[i, j] = distances[j, i] = dist
+            
+            # Count "hydrogen bonds" (distances < cutoff)
+            hbonds = np.sum(distances < cutoff_distance) // 2  # Avoid double counting
+            hbond_counts.append(hbonds)
+        
+        hbond_data = np.array(hbond_counts)
+        
+        print(f"Hydrogen bonds: mean = {hbond_data.mean():.1f}, "
+              f"std = {hbond_data.std():.1f}")
+        
+        return hbond_data
+    
+    def create_analysis_plots(self, output_dir='md_plots'):
+        """Generate analysis plots"""
+        Path(output_dir).mkdir(exist_ok=True)
+        
+        if self.time_points is None:
+            print("No trajectory data to plot!")
+            return
+        
+        plt.style.use('seaborn-v0_8')
+        
+        # Plot 1: RMSD over time
+        if self.rmsd_data is not None:
+            plt.figure(figsize=(12, 6))
+            plt.plot(self.time_points, self.rmsd_data, 'b-', alpha=0.7)
+            plt.xlabel('Time (ns)')
+            plt.ylabel('RMSD (Å)')
+            plt.title('Root Mean Square Deviation vs Time')
+            plt.grid(True, alpha=0.3)
+            
+            # Add running average
+            window = 50
+            if len(self.rmsd_data) > window:
+                running_avg = np.convolve(self.rmsd_data, 
+                                        np.ones(window)/window, mode='valid')
+                time_avg = self.time_points[window-1:]
+                plt.plot(time_avg, running_avg, 'r-', linewidth=2, 
+                        label=f'Running average ({window} frames)')
+                plt.legend()
+            
+            plt.tight_layout()
+            plt.savefig(f'{output_dir}/rmsd_plot.png', dpi=300)
+            plt.show()
+        
+        # Plot 2: RMSF per residue
+        if self.rmsf_data is not None:
+            plt.figure(figsize=(12, 6))
+            residue_numbers = np.arange(1, len(self.rmsf_data) + 1)
+            plt.bar(residue_numbers, self.rmsf_data, alpha=0.7, color='green')
+            plt.xlabel('Atom Number')
+            plt.ylabel('RMSF (Å)')
+            plt.title('Root Mean Square Fluctuation per Atom')
+            plt.grid(True, alpha=0.3)
+            
+            # Highlight highly flexible atoms
+            threshold = np.mean(self.rmsf_data) + 2 * np.std(self.rmsf_data)
+            flexible_atoms = np.where(self.rmsf_data > threshold)[0]
+            if len(flexible_atoms) > 0:
+                plt.scatter(flexible_atoms + 1, self.rmsf_data[flexible_atoms], 
+                          color='red', s=50, zorder=5, label='Highly flexible')
+                plt.legend()
+            
+            plt.tight_layout()
+            plt.savefig(f'{output_dir}/rmsf_plot.png', dpi=300)
+            plt.show()
+        
+        # Plot 3: Combined analysis
+        self._create_combined_plot(output_dir)
+    
+    def _create_combined_plot(self, output_dir):
+        """Create combined analysis plot"""
+        fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+        
+        # RMSD
+        if self.rmsd_data is not None:
+            axes[0, 0].plot(self.time_points, self.rmsd_data, 'b-', alpha=0.7)
+            axes[0, 0].set_xlabel('Time (ns)')
+            axes[0, 0].set_ylabel('RMSD (Å)')
+            axes[0, 0].set_title('RMSD vs Time')
+            axes[0, 0].grid(True, alpha=0.3)
+        
+        # RMSF
+        if self.rmsf_data is not None:
+            axes[0, 1].bar(range(len(self.rmsf_data)), self.rmsf_data, 
+                          alpha=0.7, color='green')
+            axes[0, 1].set_xlabel('Atom Number')
+            axes[0, 1].set_ylabel('RMSF (Å)')
+            axes[0, 1].set_title('RMSF per Atom')
+            axes[0, 1].grid(True, alpha=0.3)
+        
+        # Radius of gyration
+        rg_data = self.calculate_radius_of_gyration()
+        if rg_data is not None:
+            axes[1, 0].plot(self.time_points, rg_data, 'purple', alpha=0.7)
+            axes[1, 0].set_xlabel('Time (ns)')
+            axes[1, 0].set_ylabel('Rg (Å)')
+            axes[1, 0].set_title('Radius of Gyration')
+            axes[1, 0].grid(True, alpha=0.3)
+        
+        # Distance analysis
+        hbond_data = self.analyze_hydrogen_bonds()
+        if hbond_data is not None:
+            axes[1, 1].plot(self.time_points, hbond_data, 'orange', alpha=0.7)
+            axes[1, 1].set_xlabel('Time (ns)')
+            axes[1, 1].set_ylabel('Contact Count')
+            axes[1, 1].set_title('Inter-atomic Contacts (< 3.5 Å)')
+            axes[1, 1].grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        plt.savefig(f'{output_dir}/combined_analysis.png', dpi=300)
+        plt.show()
+    
+    def generate_summary_report(self, filename='md_analysis_report.txt'):
+        """Generate analysis summary report"""
+        with open(filename, 'w') as f:
+            f.write("Molecular Dynamics Trajectory Analysis Report\n")
+            f.write("=" * 50 + "\n\n")
+            
+            if self.time_points is not None:
+                f.write(f"Simulation Details:\n")
+                f.write(f"- Total frames: {len(self.time_points)}\n")
+                f.write(f"- Simulation time: {self.time_points[-1]:.1f} ns\n")
+                f.write(f"- Time step: {self.time_points[1] - self.time_points[0]:.2f} ns\n")
+                f.write(f"- Number of atoms: {self.coordinates.shape[1] // 3}\n\n")
+            
+            if self.rmsd_data is not None:
+                f.write(f"RMSD Analysis:\n")
+                f.write(f"- Mean RMSD: {self.rmsd_data.mean():.2f} ± {self.rmsd_data.std():.2f} Å\n")
+                f.write(f"- Maximum RMSD: {self.rmsd_data.max():.2f} Å\n")
+                f.write(f"- Final RMSD: {self.rmsd_data[-1]:.2f} Å\n\n")
+            
+            if self.rmsf_data is not None:
+                f.write(f"RMSF Analysis:\n")
+                f.write(f"- Mean RMSF: {self.rmsf_data.mean():.2f} ± {self.rmsf_data.std():.2f} Å\n")
+                f.write(f"- Most flexible atom: {np.argmax(self.rmsf_data) + 1} (RMSF = {self.rmsf_data.max():.2f} Å)\n")
+                f.write(f"- Least flexible atom: {np.argmin(self.rmsf_data) + 1} (RMSF = {self.rmsf_data.min():.2f} Å)\n\n")
+            
+            # Additional analyses
+            rg_data = self.calculate_radius_of_gyration()
+            if rg_data is not None:
+                f.write(f"Structural Compactness:\n")
+                f.write(f"- Mean radius of gyration: {rg_data.mean():.2f} ± {rg_data.std():.2f} Å\n")
+                f.write(f"- Compactness change: {((rg_data[-1] - rg_data[0])/rg_data[0]*100):+.1f}%\n\n")
+            
+            f.write("Analysis completed successfully!\n")
+        
+        print(f"Summary report saved to: {filename}")
+
+def main():
+    """Main MD analysis workflow"""
+    print("Molecular Dynamics Trajectory Analyzer")
+    print("=====================================")
+    
+    # Initialize analyzer
+    analyzer = MDTrajectoryAnalyzer()
+    
+    # Load trajectory
+    if not analyzer.load_trajectory_data():
+        print("Failed to load trajectory data!")
+        return
+    
+    print("\nPerforming analyses...")
+    
+    # Calculate RMSD
+    print("Calculating RMSD...")
+    analyzer.calculate_rmsd()
+    
+    # Calculate RMSF
+    print("Calculating RMSF...")
+    analyzer.calculate_rmsf()
+    
+    # Generate plots
+    print("Creating plots...")
+    analyzer.create_analysis_plots()
+    
+    # Generate report
+    print("Generating summary report...")
+    analyzer.generate_summary_report()
+    
+    print("\nMD trajectory analysis completed!")
+    print("Check 'md_plots' folder for visualizations")
+    print("Check 'md_analysis_report.txt' for summary")
+
+if __name__ == "__main__":
+    main()
