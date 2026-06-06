@@ -1,30 +1,24 @@
 # pubchem-natural-compound-fetcher
 
-Retrieves physicochemical properties from the PubChem REST API for a list of natural compounds and produces drug-likeness summary plots.
-
-## Context
-This project was developed as part of my master's thesis in biochemistry at **[University Name]**, where I investigated a set of plant-derived secondary metabolites as potential inhibitors of **[target enzyme]**. The work presented here is a supporting computational component of a broader wet-lab study; it is not a standalone software package.
-
-The original compound library used in the thesis cannot be shared because it is part of an ongoing research project. All files in `data/mock_data/` are fabricated examples that demonstrate the expected input format and allow the code to be run without access to the original data.
+Fetches physicochemical properties of a given set of natural compounds using PubChem REST API and generates summary plot for drug-likeness.
 
 ## The Problem
-During the compound selection phase of the thesis, I worked with a library of approximately 80 natural compounds. For each compound, I needed to collect standard physicochemical descriptors — molecular weight, LogP, TPSA, H-bond donor and acceptor counts — to evaluate them against Lipinski's Rule of Five and oral bioavailability thresholds before prioritising candidates for in vitro assays.
+In the compound selection part of the thesis, a library of around 80 natural compounds was used. Standard physicochemical parameters (molecular weight, LogP, TPSA, and number of H-bond donors and acceptors) were extracted for each compound, which were then used in the assessment of Lipinski's rule of five and the oral bioavailability criteria to prioritize them for the in vitro tests.
 
-The manual workflow was:
-1. Search each compound by name on the PubChem website.
-2. Copy the relevant property values into a spreadsheet row.
-3. Repeat for every compound, and repeat again each time the library was revised.
+Manual procedure was as follows:
+1. Search each compound name on PubChem website.
+2. Transcribe appropriate property values to a single row in a spreadsheet.
+3. Perform this for each compound, then perform for each compound again whenever the library was modified.
 
-This became a noticeable time sink as the library was updated multiple times during the project, and manual data entry introduced transcription errors.
+This turned out to be a significant time sink when the library had to be updated several times during the project and transcription errors occurred.
 
 ## The Solution
-`fetch_pubchem_properties.py` reads a CSV file of compound names, resolves each name to a PubChem CID using the PUG REST API, retrieves the requested properties in a second request, and writes a consolidated CSV to `results/`. A short delay between requests is included to comply with PubChem's usage guidelines.
+Fetchpubchemproperties.py takes a CSV file with compound names as input, translates the names into PubChem CIDs via PUG REST API and makes a second call to fetch desired properties. Then, all results were saved in a new CSV in results/. A small delay between the requests is added in order to follow the PubChem usage policy.
 
-`visualize_properties.R` reads that results file and produces two figures:
-- A scatter plot of molecular weight vs. XLogP with Lipinski threshold lines overlaid.
-- A bar chart of TPSA values across the library with the 140 Å² absorption threshold marked.
-
-These figures were used directly in the thesis to justify compound prioritisation.
+Visualize_properties.R takes this results file and generates two plots:
+- A plot of molecular weight against XLogP, with lines for Lipinski's threshold added.
+- A plot of TPSA values across the library, with a 140 absorption threshold marked.
+These figures are what I used directly in my thesis in order to argue why a certain set of compounds should be chosen over another.
 
 ## Repository Structure
 
@@ -65,24 +59,24 @@ Bash
 
 python fetch_pubchem_properties.py
 
-The script will print progress to the terminal and write results/compound_properties.csv when finished. With the mock data (6 compounds) this takes roughly 10–15 seconds due to the request delays.
+This script will print progress to the terminal and will save the results to compound_properties.csv once it has finished. For 6 compounds with mock data this should take between 10-15 seconds due to the request delays.
 
-Output PDFs will appear in results/.
+Generated PDFs can be found in the results/ directory.
 
-Note: R packages required: ggplot2, dplyr, readr, tidyr. Install them via:
+NB. Required R packages: ggplot2, dplyr, readr, tidyr.Install them using:
 R
 install.packages(c("ggplot2", "dplyr", "readr", "tidyr"))
 
-Notes and Limitations
+Notes & Caveats
 
-    The PubChem name-to-CID resolver works well for common compound names but can return unexpected matches for trivial or ambiguous names. It is advisable to verify CIDs for any compound that is central to the analysis.
+    The PubChem name-to-CID resolver works quite well for most common compounds, but may have surprises in the output for very trivial names or names that are ambiguous. It is always a good idea to confirm the CIDs for any compound which is critical to the analysis.
 
-    The script does not currently handle rate-limiting responses (HTTP 503) from PubChem gracefully. For libraries larger than ~200 compounds, adding retry logic or using the PubChem PUG-REST batch endpoint would be more appropriate.
+ This script does not currently cope gracefully with rate-limiting (HTTP 503) responses from PubChem. For libraries with more than ~200 compounds, you would probably want to implement a retry mechanism or the PubChem PUG-REST batch endpoint.
 
-    Property availability varies by compound; some entries in the output will have NaN for fields such as XLogP if PubChem does not report them.
+ Properties will not be available for all compounds: for any given compound, fields like XLogP will report as NaN if PubChem does not supply them.
 
 Honest Skill Disclaimer
 
-I am a biochemist who uses computational tools to advance my research and am still learning more advanced concepts.
- This code was written to solve a specific research problem encountered during my thesis — namely, the repetitive manual retrieval of physicochemical data from a public database — and not to serve as a general-purpose library or a publicly distributed software package.
- The scripts are functional and readable, but they reflect the work of a researcher rather than a software developer. Feedback or suggestions are welcome.
+I'm a biochemist who utilize computers to conduct research and I am currently trying to learn about more advanced topics.
+ This code was written to resolve a particular research issue during my thesis (which is the manual fetch of physico-chemical information from a public database, over and over). It is NOT a library nor a public software release.
+ It is readable and runnable code from a research point of view but certainly not from a software developer's perspective. Any suggestion/critique would be highly appreciated.
