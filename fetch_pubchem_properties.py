@@ -1,24 +1,8 @@
-"""
-fetch_pubchem_properties.py
-
-Context: This script was written during my master's thesis in biochemistry to automate
-the retrieval of chemical property data for a library of natural compounds under
-investigation as potential enzyme inhibitors. Manually looking up each compound
-on PubChem and copying values into a spreadsheet was taking several hours per
-iteration, and the library changed frequently as compounds were added or excluded.
-
-The script takes a CSV of compound names, queries the PubChem REST API for each,
-and returns a consolidated table of physicochemical properties relevant to
-drug-likeness assessment (MW, LogP, H-bond donors/acceptors, TPSA).
-"""
-
 import requests
 import pandas as pd
 import time
 import logging
 import os
-
-# --- Configuration -----------------------------------------------------------
 
 INPUT_FILE  = "data/mock_data/compound_library_mock.csv"
 OUTPUT_FILE = "results/compound_properties.csv"
