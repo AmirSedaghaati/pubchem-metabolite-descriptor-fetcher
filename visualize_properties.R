@@ -1,23 +1,11 @@
-# visualize_properties.R
-#
-# Context: After fetch_pubchem_properties.py retrieves the physicochemical data,
-# this script produces two plots that were used in the thesis to justify compound
-# selection based on Lipinski's Rule of Five criteria and TPSA thresholds for
-# oral bioavailability. The figures were exported as publication-ready PDFs.
-#
-# The script expects the output CSV produced by the Python fetcher.
-
 library(ggplot2)
 library(dplyr)
 library(readr)
 library(tidyr)
 
-# --- Paths -------------------------------------------------------------------
 
 INPUT_FILE  <- "results/compound_properties.csv"
 OUTPUT_DIR  <- "results/"
-
-# -----------------------------------------------------------------------------
 
 df <- read_csv(INPUT_FILE, show_col_types = FALSE)
 
