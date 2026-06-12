@@ -5,3 +5,23 @@ Rosmarinic acid,Rosmarinus officinalis,20283-92-5,antioxidant,phenylpropanoid; s
 Apigenin,Matricaria chamomilla,520-36-5,enzyme_inhibition,flavone; poor bioavailability in preliminary tests
 Hypericin,Hypericum perforatum,548-04-9,photosensitizer,naphthodianthrone; light-sensitive handling required
 Caffeic acid,various plants,331-39-5,antioxidant,hydroxycinnamic acid; reference compound for DPPH assay
+
+
+
+
+
+
+
+
+
+
+
+
+
+compound_name,source_organism,cas_number,expected_activity,notes
+Quercetin,Quercus robur,117-39-5,enzyme_inhibition,flavonoid; used as positive control in assay
+Berberine,Berberis vulgaris,2086-83-1,antimicrobial,alkaloid; limited aqueous solubility noted
+Rosmarinic acid,Rosmarinus officinalis,20283-92-5,antioxidant,phenylpropanoid; stable at pH 7.4
+Apigenin,Matricaria chamomilla,520-36-5,enzyme_inhibition,flavone; poor bioavailability in preliminary tests
+Hypericin,Hypericum perforatum,548-04-9,photosensitizer,naphthodianthrone; light-sensitive handling required
+Caffeic acid,various plants,331-39-5,antioxidant,hydroxycinnamic acid; reference compound for DPPH assay
