@@ -1,45 +1,63 @@
-# PubChem Natural Compound Fetcher
+# PubChem Metabolite Descriptor Fetcher
 
-> An automated data retrieval and visualization pipeline to extract physicochemical properties from the PubChem REST API for drug-likeness assessment.
-
----
+Automated pipeline to pull physicochemical properties from the PubChem REST API, visualizing the drug-likeness of a compound library.
 
 ## Background
-The task of evaluating the drug-likeness of the libraries compounds involves fetching standard physicochemical properties (Mol. Weight, Log P, TPSA, H-bond donors/acceptors) to check Lipinski's Rule of Five and orally bioavailability. Querying public databases manually to obtain these parameters on successive library updates will prove to be an extremely tedious task prone to transcription errors and bottleneck in the compound prioritizing stage.
 
----
+Evaluating drug-likeness of a compound library is the first step, which involves retrieving some conventional physicochemical parameters of compounds (MW, LogP, TPSA, HBD/HBA count) and screening it against the Rule of 5 and for oral bioavailability. The manual querying of these values in public databases at each library update is slow, laborious, prone to transcription errors, and a major bottleneck during compound prioritization.
 
 ## Implementation
-This repository automates the retrieval and preliminary analysis of compound properties. The core Python script (`fetch_pubchem_properties.py`) interfaces with the PubChem PUG REST API to resolve common compound names to CIDs and fetch the targeted physicochemical data. It handles API requests with built-in delays to comply with PubChem's usage policies. An accompanying R script processes the output to generate publication-ready visualizations mapping the library against established bioavailability thresholds.
 
----
+This repo aims to automatically fetch and do initial analysis on the properties of a library of compounds. The main script, fetchpubchemproperties.py, performs a two stage search query to the PubChem PUG REST API (resolve compound names to CIDs and then find the properties of each CID), implementing rate limiting and retry-with-backoff to ensure that requests will not fail permanently due to intermittent issues, and that the query complies with PubChem's access limits. The R script, visualize_properties.R, then plots out the library with regards to Lipinski and TPSA thresholds.
 
 ## Technical Stack
 
 | Component | Function |
-| :--- | :--- |
-| **Python 3.10+ / requests & pandas** | API communication, data parsing, and tabular formatting |
-| **R 4.3+ / ggplot2 & dplyr** | Statistical visualization of chemical space |
-| **PubChem PUG REST API** | Primary data source for physicochemical properties |
+|---|---|
+| Python 3.10+ / requests, pandas | API communication, data parsing, tabular formatting |
+| R 4.3+ / ggplot2, dplyr, readr | Visualization of chemical space against drug-likeness thresholds |
+| PubChem PUG REST API | Source for physicochemical properties |
 
----
+## Usage
+
+```bash
+pip install -r requirements.txt
+
+python fetch_pubchem_properties.py --input data/mock_data/compound_library_mock.csv --output results/compound_properties.csv
+
+Rscript visualize_properties.R
+```
 
 ## File Structure
 
-```text
-pubchem-natural-compound-fetcher/
+pubchem-metabolite-descriptor-fetcher/
+
 │
+
 ├── data/
+
 │   └── mock_data/
-│       └── compound_library_mock.csv       # Fabricated example list for testing
+
+│       └── compound_library_mock.csv       # Example library for testing
+
 │
+
 ├── results/                                # Output directory (generated on execution)
+
 │   ├── compound_properties.csv
+
 │   ├── lipinski_scatter.pdf
+
 │   └── tpsa_barplot.pdf
+
 │
+
 ├── fetch_pubchem_properties.py             # Main data retrieval script
-├── visualize_properties.R                  # R script for visualization
+
+├── visualize_properties.R                  # Visualization script
+
 ├── requirements.txt
+
 ├── .gitignore
+
 └── README.md
