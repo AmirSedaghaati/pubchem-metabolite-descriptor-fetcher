@@ -21,6 +21,17 @@ numeric_cols <- c("MolecularWeight", "XLogP", "HBondDonorCount", "HBondAcceptorC
 df_ok <- df_ok %>%
   mutate(across(all_of(numeric_cols), as.numeric))
 
+# Report any compounds with missing numeric values after coercion, so
+# omissions from the plots below are visible rather than silent.
+na_rows <- df_ok %>% filter(if_any(all_of(numeric_cols), is.na))
+if (nrow(na_rows) > 0) {
+  message(
+    "Note: ", nrow(na_rows), " compound(s) have missing values in ",
+    "one or more plotted properties and may not appear in all plots: ",
+    paste(na_rows$compound_name, collapse = ", ")
+  )
+}
+
 
 # --- Plot 1: Lipinski property overview (scatter: MW vs LogP) ----------------
 #
