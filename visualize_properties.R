@@ -4,8 +4,9 @@ library(readr)
 library(tidyr)
 
 
-INPUT_FILE  <- "results/compound_properties.csv"
-OUTPUT_DIR  <- "results/"
+args <- commandArgs(trailingOnly = TRUE)
+INPUT_FILE <- if (length(args) >= 1) args[1] else "results/compound_properties.csv"
+OUTPUT_DIR <- if (length(args) >= 2) args[2] else "results/"
 
 df <- read_csv(INPUT_FILE, show_col_types = FALSE)
 
