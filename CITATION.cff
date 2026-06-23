@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "PubChem Metabolite Descriptor Fetcher"
+authors:
+  - family-names: "Sedaghati"
+    given-names: "Amir"
+    orcid: "https://orcid.org/0009-0002-6445-0329"
+version: 0.1.0
+date-released: 2026-06-12
+url: "https://github.com/AmirSedaghaati/pubchem-metabolite-descriptor-fetcher"
