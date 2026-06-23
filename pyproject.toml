@@ -1,0 +1,20 @@
+[project]
+name = "pubchem-metabolite-descriptor-fetcher"
+version = "0.1.0"
+description = "Batch retrieval and drug-likeness visualization of compound libraries via the PubChem PUG REST API"
+authors = [{ name = "Amir Sedaghati", email = "aamirsedaghati@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.1,<3.0",
+    "requests>=2.31,<3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-mock>=3.12", "ruff>=0.4"]
+
+[project.scripts]
+fetch-pubchem-properties = "fetch_pubchem_properties:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
