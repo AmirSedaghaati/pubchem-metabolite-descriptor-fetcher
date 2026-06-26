@@ -69,3 +69,6 @@ Run the pipeline against the mock compound library, then visualize:
 ```bash
 python fetch_pubchem_properties.py --input data/mock_data/compound_library_mock.csv --output results/compound_properties.csv
 Rscript visualize_properties.R results/compound_properties.csv results/
+```
+[Lipinski scatter plot](results/lipinski_scatter.png)
+[TPSA bar plot](results/tpsa_barplot.png)
