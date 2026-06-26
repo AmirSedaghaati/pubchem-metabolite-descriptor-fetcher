@@ -64,11 +64,11 @@ p1 <- ggplot(df_ok, aes(x = MolecularWeight, y = XLogP, label = compound_name)) 
   )
 
 ggsave(
-  filename = file.path(OUTPUT_DIR, "lipinski_scatter.pdf"),
+  filename = file.path(OUTPUT_DIR, "lipinski_scatter.png"),
   plot     = p1,
   width    = 7, height = 5, units = "in"
 )
-message("Saved: lipinski_scatter.pdf")
+message("Saved: lipinski_scatter.png")
 
 
 # --- Plot 2: TPSA bar chart --------------------------------------------------
@@ -95,8 +95,8 @@ p2 <- ggplot(df_ok, aes(x = reorder(compound_name, TPSA), y = TPSA, fill = expec
   )
 
 ggsave(
-  filename = file.path(OUTPUT_DIR, "tpsa_barplot.pdf"),
+  filename = file.path(OUTPUT_DIR, "tpsa_barplot.png"),
   plot     = p2,
   width    = 7, height = 4.5, units = "in"
 )
-message("Saved: tpsa_barplot.pdf")
+message("Saved: tpsa_barplot.png")
