@@ -1,7 +1,3 @@
-# Generated output
-results/*.csv
-results/*.pdf
-
 # Python
 __pycache__/
 *.pyc
