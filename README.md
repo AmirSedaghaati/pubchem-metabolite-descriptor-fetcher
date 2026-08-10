@@ -32,37 +32,24 @@ Rscript visualize_properties.R
 
 ## File Structure
 
+```
 pubchem-metabolite-descriptor-fetcher/
-
-│
-
 ├── data/
-
 │   └── mock_data/
-
 │       └── compound_library_mock.csv       # Example library for testing
-
-│
-
 ├── results/                                # Output directory (generated on execution)
-
 │   ├── compound_properties.csv
-
-│   ├── lipinski_scatter.pdf
-
-│   └── tpsa_barplot.pdf
-
-│
-
+│   ├── lipinski_scatter.png
+│   └── tpsa_barplot.png
+├── tests/
+│   └── test_fetch_pubchem_properties.py
 ├── fetch_pubchem_properties.py             # Main data retrieval script
-
 ├── visualize_properties.R                  # Visualization script
-
+├── pyproject.toml
 ├── requirements.txt
-
 ├── .gitignore
-
 └── README.md
+```
 
 ## Example output
 
