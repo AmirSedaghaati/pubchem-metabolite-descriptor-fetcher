@@ -8,7 +8,7 @@ Evaluating drug-likeness of a compound library is the first step, which involves
 
 ## Implementation
 
-This repo aims to automatically fetch and do initial analysis on the properties of a library of compounds. The main script, fetchpubchemproperties.py, performs a two stage search query to the PubChem PUG REST API (resolve compound names to CIDs and then find the properties of each CID), implementing rate limiting and retry-with-backoff to ensure that requests will not fail permanently due to intermittent issues, and that the query complies with PubChem's access limits. The R script, visualize_properties.R, then plots out the library with regards to Lipinski and TPSA thresholds.
+This repo aims to automatically fetch and do initial analysis on the properties of a library of compounds. The main script, fetch_pubchem_properties.py, performs a two-stage query to the PubChem PUG REST API (resolve compound names to CIDs and then find the properties of each CID), implementing rate limiting and retry-with-backoff to ensure that requests will not fail permanently due to intermittent issues, and that the query complies with PubChem's access limits. The R script, visualize_properties.R, then plots out the library with regards to Lipinski and TPSA thresholds.
 
 Note: an optional `expected_activity` column in your input CSV will be used to color-code points in the visualization plots — it isn't fetched from PubChem, so it's only present if your own library file includes it.
 
